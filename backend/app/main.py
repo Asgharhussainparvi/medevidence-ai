@@ -2,7 +2,7 @@
 """FastAPI application for MedEvidence AI."""
 
 from fastapi import FastAPI
-
+import os
 from app.generation import generate_answer
 from app.retrieval import search_library
 from app.safety import DISCLAIMER, check_safety
@@ -14,7 +14,7 @@ from app.schemas import (
 )
 from app.verification import verify_claims
 from fastapi.middleware.cors import CORSMiddleware
-
+frontend_origin = os.getenv("FRONTEND_ORIGIN", "").rstrip("/")
 app = FastAPI(
     title="MedEvidence AI",
     description=(
@@ -24,12 +24,17 @@ app = FastAPI(
     version="0.1.0",
 )
 
+allowed_origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
+
+if frontend_origin:
+    allowed_origins.append(frontend_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["GET", "POST"],
     allow_headers=["Content-Type"],
